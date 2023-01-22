@@ -78,8 +78,57 @@ function tick() {
 refreshScreenSize();
 tick();
 
-ontouchstart = e => {
-    console.log(e);
+function checkGridLines() {
+    var rowsToClear = {x: [], y: []};
+
+    var cols = [];
+    for (let f = 0; f < gridCount; f++) {
+        cols[f] = true;
+    }
+
+    for (let j = 0; j < gridCount; j++) {
+
+        if (grid[j].every(x => x.filled)) {
+            rowsToClear.y[rowsToClear.x.length] = j;
+        }
+        for (let i = 0; i < gridCount; i++) {
+            if (!grid[j][i].filled) {
+                cols[i] = false;
+            }
+        }
+    }
+
+    rowsToClear.y.forEach(row => {
+        grid[row].forEach(c => c.filled = false);
+    });
+
+    cols.forEach((filled, index) => {
+        if (filled) {
+            for (let row = 0; row < gridCount; row++) {
+                grid[row][index].filled = false;
+            }
+        }
+    });
+}
+
+window.addEventListener('touchstart', e => {
+    var touchX = e.changedTouches[0].pageX;
+    var touchY = e.changedTouches[0].pageY;
+    var gridCords = screenToGrid(touchX, touchY);
+    
+    grid[gridCords.y][gridCords.x].filled = !grid[gridCords.y][gridCords.x].filled;
+    checkGridLines();
+});
+
+function screenToGrid(x, y) {
+    var xMid = x-canvas.width/2;
+    var xUnits = xMid/(gridCellSize+gridCellSpacing);
+    var xGrid = Math.floor(gridCount/2 + xUnits);
+    var yMid = y-canvas.height/2;
+    var yUnits = yMid/(gridCellSize+gridCellSpacing);
+    var yGrid = Math.floor(gridCount/2 + yUnits);
+
+    return {x: xGrid, y: yGrid};
 }
 
 function refreshScreenSize() {

@@ -262,7 +262,7 @@ function checkGridLines() {
     });
 
     cols.forEach((filled, index) => {
-        if (filled) {
+        if (filled == true) {
             for (let row = 0; row < gridCount; row++) {
                 grid[row][index].filled = false;
                 scoreAdd(1);
@@ -294,7 +294,7 @@ window.addEventListener('touchstart', e => {
 
 window.addEventListener('touchmove', function(e){
     e.preventDefault();
-    if (shapeTouch.id) {
+    if (shapeTouch.id != null) {
         for (let ti = 0; ti < e.changedTouches.length; ti++) {
             var t = e.changedTouches[ti];
             if (t.identifier == shapeTouch.id) {
@@ -307,7 +307,7 @@ window.addEventListener('touchmove', function(e){
 
 function touchEnd(e) {
     e.preventDefault();
-    if (shapeTouch.id && e.changedTouches[0].identifier == shapeTouch.id) {
+    if (shapeTouch.id != null && e.changedTouches[0].identifier == shapeTouch.id) {
         var gridCells = [];
         var canPlace = true;
         var shape = shapes[shapeSlots[shapeTouch.slot]];

@@ -5,9 +5,10 @@ var gridCellSpacingFac = 0.01;
 
 var shapeBatchLength = 3;
 
-var colorBG = 'rgb(24, 24, 24)';
+var colorBG = 'rgb(14, 14, 14)';
 var colorCellEmpty = 'rgba(120, 120, 120, 0.3)';
 var colorCellFilled = 'rgba(120, 120, 120, 0.75)';
+var colorReset = "#ffffff33";
 
 // Comps
 
@@ -126,11 +127,16 @@ function draw() {
     ctx.fillStyle = colorCellFilled;
     ctx.textAlign = "left"
     ctx.font = canvas.width/10 + "px arial";
-    ctx.fillText(currentScore, 10, canvas.width/10, canvas.width/2);
+    ctx.fillText(currentScore, 10, canvas.width/10, canvas.width/2 - canvas.width/10);
     ctx.fillStyle = colorCellEmpty;
     ctx.textAlign = "right"
     ctx.font = canvas.width/10 + "px arial";
-    ctx.fillText(highScore, canvas.width - 10, canvas.width/10, canvas.width/2);
+    ctx.fillText(highScore, canvas.width - 10, canvas.width/10, canvas.width/2 - canvas.width/10);
+
+    ctx.fillStyle = colorReset;
+    ctx.textAlign = "center"
+    ctx.font = canvas.width/10 + "px arial";
+    ctx.fillText("😭", canvas.width/2, canvas.width/10);
 }
 
 function drawShape(x, y, shapeIndex, cellSize, padding) {

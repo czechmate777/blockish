@@ -13,8 +13,10 @@ var colorCellFilled = 'rgba(120, 120, 120, 0.75)';
 
 // Setup
 
-currentScore = 0;
-highScore = 0;
+var renderRequest = true;
+
+var currentScore = 0;
+var highScore = 0;
 
 // Canvas
 var portrait = true;
@@ -148,12 +150,18 @@ function drawShape(x, y, shapeIndex, cellSize, padding) {
     }
 }
 
+var rendering = true;
 function tick() {
-    draw();
+    if (rendering) {
+        draw();
+    }
+    rendering = renderRequest;
     requestAnimationFrame(tick);
 }
+
 loadProgress();
 refreshScreenSize();
+draw();
 tick();
 
 function loadProgress() {
@@ -273,6 +281,9 @@ function checkGridLines() {
 
 window.addEventListener('touchstart', e => {
     e.preventDefault();
+
+    renderRequest = true;
+
     var touchX = e.changedTouches[0].pageX;
     var touchY = e.changedTouches[0].pageY;
     
@@ -344,6 +355,7 @@ function touchEnd(e) {
         }
         shapeTouch.id = shapeTouch.slot = null;
     }
+    renderRequest = false;
 }
 window.addEventListener('touchcancel', touchEnd);
 window.addEventListener('touchend', touchEnd);

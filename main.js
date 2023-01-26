@@ -251,8 +251,7 @@ function scoreAdd(points) {
 }
 
 function checkGridLines() {
-    var rowsToClear = {x: [], y: []};
-
+    var rows = [];
     var cols = [];
     for (let f = 0; f < gridCount; f++) {
         cols[f] = true;
@@ -261,7 +260,7 @@ function checkGridLines() {
     for (let j = 0; j < gridCount; j++) {
 
         if (grid[j].every(x => x.filled)) {
-            rowsToClear.y[rowsToClear.x.length] = j;
+            rows[rows.length] = j;
         }
         for (let i = 0; i < gridCount; i++) {
             if (!grid[j][i].filled) {
@@ -270,7 +269,7 @@ function checkGridLines() {
         }
     }
 
-    rowsToClear.y.forEach(row => {
+    rows.forEach(row => {
         grid[row].forEach(c => c.filled = false);
         scoreAdd(gridCount);
     });

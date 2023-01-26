@@ -1,6 +1,6 @@
 // Vars
 var gridCount = 10;
-var gridCellSizeFac = 0.07;
+var gridCellSizeFac = 0.08;
 var gridCellSpacingFac = 0.01;
 
 var shapeBatchLength = 3;
@@ -36,7 +36,7 @@ for (let i = 0; i < gridCount; i++) {
 // Shapes
 var shapeCellSize = 0;
 var shapeCellSpacing = 0;
-var shapeSizeFac = 0.5;
+var shapeSizeFac = 0.65;
 var shapeStartIndex = 2;
 var shapes = [
     // w, h, rest
@@ -75,6 +75,13 @@ var slotsPos = 0;
 shapeSlots = [];
 loadShapeBatch();
 
+var shapeTouch = {
+    x: 0,
+    y: 0,
+    slot: null,
+    id: null
+};
+
 // Draw
 function draw() {
     // Blank
@@ -97,28 +104,31 @@ function draw() {
     // Shapes
     ctx.fillStyle = colorCellFilled;
     shapeSlots.forEach((shapeIndex, slotIndex) => {
-        var shape = shapes[shapeIndex];
-        var drawPoint;
-        var shapeWidth;
-        var shapeHeight;
-        if (shapeTouch != null & slotIndex == shapeTouch?.slotIndex) {
-            drawPoint = shapeTouch.x
+        if (shapeTouch.id != null & slotIndex == shapeTouch.slot) {
+            var yOffset = shapes[shapeIndex][1]*(gridCellSize+gridCellSpacing)/2 + gridCellSize+gridCellSpacing;
+            drawShape(shapeTouch.x, shapeTouch.y-yOffset, shapeIndex, gridCellSize, gridCellSpacing);
         }
-        var drawPoint = canvas.width/3 * (slotIndex) + canvas.width/6;
-        var shapeWidth = shape[0]*(shapeCellSize+shapeCellSpacing);
-        var shapeHeight = shape[1]*(shapeCellSize+shapeCellSpacing);
-        for (let si = 0; si < shape.length-shapeStartIndex; si++) {
-            var shapeCellIndex = si + shapeStartIndex;
-            if (shape[shapeCellIndex] != 0) {
-                ctx.fillRect(
-                    drawPoint - shapeWidth/2 + si%shape[0] * (shapeCellSize+shapeCellSpacing) + shapeCellSpacing/2,
-                    slotsPos - shapeHeight/2 + Math.floor(si/shape[0]) * (shapeCellSize+shapeCellSpacing) + shapeCellSpacing/2,
-                    shapeCellSize,
-                    shapeCellSize
-                );
-            }
+        else {
+            drawShape(canvas.width/3 * (slotIndex) + canvas.width/6, slotsPos, shapeIndex, shapeCellSize, shapeCellSpacing);
         }
     });
+}
+
+function drawShape(x, y, shapeIndex, cellSize, padding) {
+    var shape = shapes[shapeIndex];
+    var shapeWidth = shape[0]*(cellSize+padding);
+    var shapeHeight = shape[1]*(cellSize+padding);
+    for (let si = 0; si < shape.length-shapeStartIndex; si++) {
+        var shapeCellIndex = si + shapeStartIndex;
+        if (shape[shapeCellIndex] != 0) {
+            ctx.fillRect(
+                x - shapeWidth/2 + si%shape[0] * (cellSize+padding) + padding/2,
+                y - shapeHeight/2 + Math.floor(si/shape[0]) * (cellSize+padding) + padding/2,
+                cellSize,
+                cellSize
+            );
+        }
+    }
 }
 
 function tick() {
@@ -167,42 +177,41 @@ function checkGridLines() {
     });
 }
 
-var shapeTouch = null;
-
 window.addEventListener('touchstart', e => {
     var touchX = e.changedTouches[0].pageX;
     var touchY = e.changedTouches[0].pageY;
     
     // Only care about touches if they are over the slots
-    if (shapeTouch == null && touchY > canvas.height-slotsHeight) {
-        shapeTouch = e.changedTouches[0];
-        shapeTouch.slotIndex = Math.floor(touchX/canvas.width*3);
-        console.log("Starting touch. "+ shapeTouch.slotIndex);
-        console.log(e.changedTouches);
+    if (shapeTouch.id == null && touchY > canvas.height-slotsHeight) {
+        shapeTouch = {
+            x: touchX,
+            y: touchY,
+            slot: Math.floor(touchX/canvas.width*3),
+            id: e.changedTouches[0].identifier
+        };
     }
 });
 
 window.addEventListener('touchmove', function(e){
-    if (shapeTouch) {
+    if (shapeTouch.id) {
         for (let ti = 0; ti < e.changedTouches.length; ti++) {
             var t = e.changedTouches[ti];
-            if (t.identifier == shapeTouch.identifier) {
-                shapeTouch = t;
+            if (t.identifier == shapeTouch.id) {
+                shapeTouch.x = t.pageX;
+                shapeTouch.y = t.pageY;
             }
         };
     }
 });
 
 function touchEnd(e) {
-    if (shapeTouch && e.changedTouches[0].identifier == shapeTouch.identifier) {
-        shapeTouch = null;
+    if (shapeTouch.id && e.changedTouches[0].identifier == shapeTouch.id) {
+        shapeTouch.id = shapeTouch.slot = null;
         // Return shape back or settle it
-        console.log("Ending touch.");
     }
 }
 window.addEventListener('touchcancel', touchEnd);
 window.addEventListener('touchend', touchEnd);
-
 
 function screenToGrid(x, y) {
     var xMid = x-canvas.width/2;

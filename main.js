@@ -9,7 +9,12 @@ var colorBG = 'rgb(24, 24, 24)';
 var colorCellEmpty = 'rgba(120, 120, 120, 0.3)';
 var colorCellFilled = 'rgba(120, 120, 120, 0.75)';
 
+// Comps
+
 // Setup
+
+currentScore = 0;
+highScore = 0;
 
 // Canvas
 var portrait = true;
@@ -114,6 +119,16 @@ function draw() {
             }
         }
     });
+
+    // Scores
+    ctx.fillStyle = colorCellFilled;
+    ctx.textAlign = "left"
+    ctx.font = canvas.width/10 + "px arial";
+    ctx.fillText(currentScore, 10, canvas.width/10, canvas.width/2);
+    ctx.fillStyle = colorCellEmpty;
+    ctx.textAlign = "right"
+    ctx.font = canvas.width/10 + "px arial";
+    ctx.fillText(highScore, canvas.width - 10, canvas.width/10, canvas.width/2);
 }
 
 function drawShape(x, y, shapeIndex, cellSize, padding) {
@@ -137,8 +152,67 @@ function tick() {
     draw();
     requestAnimationFrame(tick);
 }
+loadProgress();
 refreshScreenSize();
 tick();
+
+function loadProgress() {
+    currentScore = localStorage.currentScore ? parseInt(localStorage.currentScore) : currentScore;
+    highScore = localStorage.highScore ? parseInt(localStorage.highScore) : highScore;
+
+    if (localStorage.grid) {
+        localStorage.grid.split("|").forEach((inString, index) => {
+            const j = Math.floor(index/gridCount);
+            const i = index%gridCount;
+            inVals = inString.split(",");
+            for (let s = 0; s < inVals.length; s+=2) {
+                switch (typeof(grid[j][i][inVals[s]])) {
+                    case "boolean":
+                        grid[j][i][inVals[s]] = inVals[s+1] === 'true' ? true : false;
+                        break;
+                
+                    default:
+                        grid[j][i][inVals[s]] = inVals[s+1];
+                        break;
+                }
+            }
+        });
+    }
+
+    if (localStorage.shapeSlots) {
+        shapeSlots = localStorage.shapeSlots.split(",", shapeSlots.length).map(s => {
+            if (s == "") {
+                return null;
+            }
+            else {
+                return parseInt(s);
+            }
+        });
+    }
+}
+
+function saveProgress() {
+    localStorage.grid = grid.flat().map(c => Object.entries(c)).join("|");
+    localStorage.shapeSlots = shapeSlots;
+    localStorage.currentScore = currentScore;
+    localStorage.highScore = highScore;
+}
+
+function reset() {
+    // Grid
+    for (let i = 0; i < gridCount; i++) {
+        grid[i] = [];
+        for (let j = 0; j < gridCount; j++) {
+            grid[i][j] = {
+                filled: false
+            };
+        }
+    }
+
+    loadShapeBatch();
+
+    currentScore = 0;
+}
 
 function loadShapeBatch() {
     for (let s = 0; s < shapeBatchLength; s++) {
@@ -151,6 +225,15 @@ function clearShapeSlot(slotIndex) {
     if (shapeSlots.every(s => s == null)) {
         loadShapeBatch();
     }
+    saveProgress();
+}
+
+function scoreAdd(points) {
+    currentScore += points;
+    if (currentScore > highScore) {
+        highScore = currentScore;
+    }
+    saveProgress();
 }
 
 function checkGridLines() {
@@ -175,12 +258,14 @@ function checkGridLines() {
 
     rowsToClear.y.forEach(row => {
         grid[row].forEach(c => c.filled = false);
+        scoreAdd(gridCount);
     });
 
     cols.forEach((filled, index) => {
         if (filled) {
             for (let row = 0; row < gridCount; row++) {
                 grid[row][index].filled = false;
+                scoreAdd(1);
             }
         }
     });
@@ -190,7 +275,7 @@ window.addEventListener('touchstart', e => {
     var touchX = e.changedTouches[0].pageX;
     var touchY = e.changedTouches[0].pageY;
     
-    // Only care about touches if they are over the slots
+    // Touches if they are over the slots
     if (shapeTouch.id == null && touchY > canvas.height-slotsHeight) {
         var slot = Math.floor(touchX/canvas.width*3);
         shapeTouch = {
@@ -200,6 +285,9 @@ window.addEventListener('touchstart', e => {
             slot: slot,
             id: e.changedTouches[0].identifier
         };
+    }
+    else if (shapeTouch.id == null && touchY < canvas.width/5) {
+        reset();
     }
 });
 
@@ -243,7 +331,10 @@ function touchEnd(e) {
             clearShapeSlot(shapeTouch.slot);
 
             // Place the shape on the grid
-            gridCells.forEach(c => grid[c.y][c.x].filled = true);
+            gridCells.forEach(c => {
+                grid[c.y][c.x].filled = true;
+                scoreAdd(1);
+            });
 
             // Check for filled rows
             checkGridLines();

@@ -272,6 +272,7 @@ function checkGridLines() {
 }
 
 window.addEventListener('touchstart', e => {
+    e.preventDefault();
     var touchX = e.changedTouches[0].pageX;
     var touchY = e.changedTouches[0].pageY;
     
@@ -292,6 +293,7 @@ window.addEventListener('touchstart', e => {
 });
 
 window.addEventListener('touchmove', function(e){
+    e.preventDefault();
     if (shapeTouch.id) {
         for (let ti = 0; ti < e.changedTouches.length; ti++) {
             var t = e.changedTouches[ti];
@@ -304,6 +306,7 @@ window.addEventListener('touchmove', function(e){
 });
 
 function touchEnd(e) {
+    e.preventDefault();
     if (shapeTouch.id && e.changedTouches[0].identifier == shapeTouch.id) {
         var gridCells = [];
         var canPlace = true;

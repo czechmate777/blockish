@@ -136,7 +136,7 @@ function draw() {
     ctx.fillStyle = colorReset;
     ctx.textAlign = "center"
     ctx.font = canvas.width/10 + "px arial";
-    ctx.fillText("😭", canvas.width/2, canvas.width/10);
+    ctx.fillText("↺", canvas.width/2, canvas.width/10);
 }
 
 function drawShape(x, y, shapeIndex, cellSize, padding) {

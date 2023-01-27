@@ -6,9 +6,11 @@ var gridCellSpacingFac = 0.01;
 var shapeBatchLength = 3;
 
 var colorBG = 'rgb(14, 14, 14)';
-var colorCellEmpty = 'rgba(120, 120, 120, 0.3)';
-var colorCellFilled = 'rgba(120, 120, 120, 0.75)';
+var colorEmpty = 'rgba(120, 120, 120, 0.3)';
+var colorFilled = 'rgba(120, 120, 120, 0.75)';
 var colorReset = "#ffffff33";
+
+var bw = false;
 
 // Comps
 
@@ -36,7 +38,7 @@ for (let i = 0; i < gridCount; i++) {
     grid[i] = [];
     for (let j = 0; j < gridCount; j++) {
         grid[i][j] = {
-            filled: false
+            filled: false,
         };
     }
 }
@@ -45,41 +47,51 @@ for (let i = 0; i < gridCount; i++) {
 var shapeCellSize = 0;
 var shapeCellSpacing = 0;
 var shapeSizeFac = 0.65;
-var shapeStartIndex = 2;
+var shapeStartIndex = 3;
 var shapes = [
     // w, h, rest
     // 1x5
-    [5, 1, 1,1,1,1,1],
-    [1, 5, 1,1,1,1,1],
+    [5, 1, 0, 1,1,1,1,1],
+    [1, 5, 0, 1,1,1,1,1],
     // 1x4
-    [4, 1, 1,1,1,1],
-    [1, 4, 1,1,1,1],
+    [4, 1, 1, 1,1,1,1],
+    [1, 4, 1, 1,1,1,1],
     // 1x3
-    [3, 1, 1,1,1],
-    [1, 3, 1,1,1],
+    [3, 1, 2, 1,1,1],
+    [1, 3, 2, 1,1,1],
     // 1x2
-    [2, 1, 1,1],
-    [1, 2, 1,1],
+    [2, 1, 3, 1,1],
+    [1, 2, 3, 1,1],
     // 3x3
-    [3, 3, 1,1,1,1,1,1,1,1,1],
-    // 2x2
-    [2, 2, 1,1,1,1],
+    [3, 3, 4, 1,1,1,1,1,1,1,1,1],
+    // 2x2 4,
+    [2, 2, 4, 1,1,1,1],
     // L
-    [3, 3, 1,0,0,1,0,0,1,1,1],
-    [3, 3, 1,1,1,1,0,0,1],
-    [3, 3, 1,1,1,0,0,1,0,0,1],
-    [3, 3, 0,0,1,0,0,1,1,1,1],
+    [3, 3, 5, 1,0,0,1,0,0,1,1,1],
+    [3, 3, 5, 1,1,1,1,0,0,1],
+    [3, 3, 5, 1,1,1,0,0,1,0,0,1],
+    [3, 3, 5, 0,0,1,0,0,1,1,1,1],
     // l
-    [2, 2, 1,0,1,1],
-    [2, 2, 1,1,1],
-    [2, 2, 1,1,0,1],
-    [2, 2, 0,1,1,1]
+    [2, 2, 6, 1,0,1,1],
+    [2, 2, 6, 1,1,1],
+    [2, 2, 6, 1,1,0,1],
+    [2, 2, 6, 0,1,1,1]
+];
+
+var colors = [
+    "#567189",
+    "#562289",
+    "#893868",
+    "#893333",
+    "#895730",
+    "#897215",
+    "#50891B",
+    "#12896C"
 ];
 
 var slotsHeight = 0;
 var slotsPos = 0;
 
-// ToDo: load this from memory
 shapeSlots = [];
 loadShapeBatch();
 
@@ -100,7 +112,17 @@ function draw() {
     // Grid
     for (let j = 0; j < grid.length; j++) {
         for (let i = 0; i < grid[j].length; i++) {
-            ctx.fillStyle = grid[j][i].filled ? colorCellFilled : colorCellEmpty;
+            if (grid[j][i].filled) {
+                if (!bw && colors[grid[j][i].color] != undefined) {
+                    ctx.fillStyle = colors[grid[j][i].color];
+                }
+                else {
+                    ctx.fillStyle = colorFilled;
+                }
+            }
+            else {
+                ctx.fillStyle = colorEmpty;
+            }
             ctx.fillRect(
                 canvas.width/2 - gridWidth/2 + i*(gridCellSize+gridCellSpacing),
                 canvas.height/2 - gridWidth/2 + j*(gridCellSize+gridCellSpacing),
@@ -111,7 +133,6 @@ function draw() {
     }
 
     // Shapes
-    ctx.fillStyle = colorCellFilled;
     shapeSlots.forEach((shapeIndex, slotIndex) => {
         if (shapeIndex != null) {
             if (shapeTouch.id != null & slotIndex == shapeTouch.slot) {
@@ -124,23 +145,34 @@ function draw() {
     });
 
     // Scores
-    ctx.fillStyle = colorCellFilled;
+    ctx.fillStyle = colorFilled;
     ctx.textAlign = "left"
     ctx.font = canvas.width/10 + "px arial";
     ctx.fillText(currentScore, 10, canvas.width/10, canvas.width/2 - canvas.width/10);
-    ctx.fillStyle = colorCellEmpty;
+    ctx.fillStyle = colorEmpty;
     ctx.textAlign = "right"
     ctx.font = canvas.width/10 + "px arial";
     ctx.fillText(highScore, canvas.width - 10, canvas.width/10, canvas.width/2 - canvas.width/10);
 
     ctx.fillStyle = colorReset;
-    ctx.textAlign = "center"
+    ctx.textAlign = "right"
     ctx.font = canvas.width/10 + "px arial";
-    ctx.fillText("↺", canvas.width/2, canvas.width/10);
+    ctx.fillText("↺ ", canvas.width/2, canvas.width/10);
+    
+    ctx.fillStyle = colorReset;
+    ctx.textAlign = "left"
+    ctx.font = canvas.width/10 + "px arial";
+    ctx.fillText("🎨", canvas.width/2, canvas.width/10);
 }
 
 function drawShape(x, y, shapeIndex, cellSize, padding) {
     var shape = shapes[shapeIndex];
+    if (!bw && colors[shape[2]] != undefined) {
+        ctx.fillStyle = colors[shape[2]];
+    }
+    else {
+        ctx.fillStyle = colorFilled;
+    }
     var shapeWidth = shape[0]*(cellSize+padding);
     var shapeHeight = shape[1]*(cellSize+padding);
     for (let si = 0; si < shape.length-shapeStartIndex; si++) {
@@ -203,6 +235,10 @@ function loadProgress() {
             }
         });
     }
+
+    if (localStorage.bw) {
+        bw = localStorage.bw === 'true';
+    }
 }
 
 function saveProgress() {
@@ -210,6 +246,7 @@ function saveProgress() {
     localStorage.shapeSlots = shapeSlots;
     localStorage.currentScore = currentScore;
     localStorage.highScore = highScore;
+    localStorage.bw = bw;
 }
 
 function reset() {
@@ -304,7 +341,13 @@ window.addEventListener('touchstart', e => {
         };
     }
     else if (shapeTouch.id == null && touchY < canvas.width/5) {
-        reset();
+        if (touchX < canvas.width/2) {
+            reset();
+        }
+        else {
+            bw = !bw;
+            draw();
+        }
     }
 });
 
@@ -352,6 +395,7 @@ function touchEnd(e) {
             // Place the shape on the grid
             gridCells.forEach(c => {
                 grid[c.y][c.x].filled = true;
+                grid[c.y][c.x].color = shape[2];
                 scoreAdd(1);
             });
 

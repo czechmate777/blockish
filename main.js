@@ -115,10 +115,6 @@ function draw() {
     // Grid
     ctx.strokeStyle = colorFilled;
     ctx.lineWidth = gridCellSpacing;
-    ctx.shadowBlur = gridCellSpacing;
-    ctx.shadowOffsetX = gridCellSpacing;
-    ctx.shadowOffsetY = gridCellSpacing;
-    ctx.shadowColor = "#000000cc";
     rect(canvas.width/2, canvas.height/2, gridWidth + gridCellSpacing*3, gridWidth + gridCellSpacing*3, true);
 
     for (let j = 0; j < grid.length; j++) {
@@ -166,6 +162,11 @@ function draw() {
     }
 
     // Shapes
+    ctx.shadowBlur = gridCellSpacing;
+    ctx.shadowOffsetX = gridCellSpacing;
+    ctx.shadowOffsetY = gridCellSpacing;
+    ctx.shadowColor = "#000000cc";
+
     shapeSlots.forEach((shapeIndex, slotIndex) => {
         if (shapeIndex != null) {
             if (shapeTouch.id != null & slotIndex == shapeTouch.slot) {
@@ -176,6 +177,10 @@ function draw() {
             }
         }
     });
+
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
 
     // Scores
     ctx.fillStyle = colorFilled;

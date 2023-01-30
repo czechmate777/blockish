@@ -6,8 +6,8 @@ var gridCellSpacingFac = 0.01;
 var shapeBatchLength = 3;
 
 var colorBG = 'rgb(14, 14, 14)';
-var colorEmpty = 'rgba(120, 120, 120, 0.3)';
-var colorFilled = 'rgba(120, 120, 120, 0.75)';
+var colorEmpty = 'rgba(120, 120, 120, 0.2)';
+var colorFilled = 'rgba(120, 120, 120, 1)';
 var colorReset = "#ffffff33";
 
 var bw = false;
@@ -111,6 +111,14 @@ function draw() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Grid
+    ctx.strokeStyle = colorFilled;
+    ctx.lineWidth = gridCellSpacing;
+    ctx.shadowBlur = gridCellSpacing;
+    ctx.shadowOffsetX = gridCellSpacing;
+    ctx.shadowOffsetY = gridCellSpacing;
+    ctx.shadowColor = "#000000cc";
+    rect(canvas.width/2, canvas.height/2, gridWidth + gridCellSpacing*3, gridWidth + gridCellSpacing*3, true);
+
     for (let j = 0; j < grid.length; j++) {
         for (let i = 0; i < grid[j].length; i++) {
             if (grid[j][i].filled) {
@@ -164,6 +172,15 @@ function draw() {
     ctx.textAlign = "left"
     ctx.font = canvas.width/10 + "px arial";
     ctx.fillText("🎨", canvas.width/2, canvas.width/10);
+}
+
+function rect(x, y, w, h, s) {
+    if (s) {
+        ctx.strokeRect(x - w/2, y - h/2, w, h);
+    }
+    else {
+        ctx.fillRect(x - w/2, y - h/2, w, h);
+    }
 }
 
 function drawShape(x, y, shapeIndex, cellSize, padding) {

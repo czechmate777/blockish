@@ -7,7 +7,7 @@ var shapeBatchLength = 3;
 
 var colorBG = 'rgb(14, 14, 14)';
 var colorEmpty = 'rgba(120, 120, 120, 0.2)';
-var colorFilled = 'rgba(120, 120, 120, 1)';
+var colorFilled = '#787878';
 var colorReset = "#ffffff33";
 
 var bw = false;
@@ -90,6 +90,8 @@ var colors = [
     "#12896C"
 ];
 
+var fades = ["11","22","33","44","55","66","77","88","99","aa","bb","cc","dd","ee"];
+
 var slotsHeight = 0;
 var slotsPos = 0;
 
@@ -128,16 +130,38 @@ function draw() {
                 else {
                     ctx.fillStyle = colorFilled;
                 }
+                ctx.fillRect(
+                    canvas.width/2 - gridWidth/2 + i*(gridCellSize+gridCellSpacing),
+                    canvas.height/2 - gridWidth/2 + j*(gridCellSize+gridCellSpacing),
+                    gridCellSize,
+                    gridCellSize
+                );
             }
             else {
                 ctx.fillStyle = colorEmpty;
+                ctx.fillRect(
+                    canvas.width/2 - gridWidth/2 + i*(gridCellSize+gridCellSpacing),
+                    canvas.height/2 - gridWidth/2 + j*(gridCellSize+gridCellSpacing),
+                    gridCellSize,
+                    gridCellSize
+                );
+                if (grid[j][i].fade != undefined) {
+                    if (!bw && colors[grid[j][i].color] != undefined) {
+                        ctx.fillStyle = colors[grid[j][i].color] + fades[grid[j][i].fade];
+                    }
+                    else {
+                        ctx.fillStyle = colorFilled + fades[grid[j][i].fade];
+                    }
+                    ctx.fillRect(
+                        canvas.width/2 - gridWidth/2 + i*(gridCellSize+gridCellSpacing),
+                        canvas.height/2 - gridWidth/2 + j*(gridCellSize+gridCellSpacing),
+                        gridCellSize,
+                        gridCellSize
+                    );
+
+                    grid[j][i].fade = --grid[j][i].fade < 0 ? undefined : grid[j][i].fade;
+                }
             }
-            ctx.fillRect(
-                canvas.width/2 - gridWidth/2 + i*(gridCellSize+gridCellSpacing),
-                canvas.height/2 - gridWidth/2 + j*(gridCellSize+gridCellSpacing),
-                gridCellSize,
-                gridCellSize
-            )
         }
     }
 
@@ -207,11 +231,28 @@ function drawShape(x, y, shapeIndex, cellSize, padding) {
 }
 
 var rendering = true;
+var renderRequestOld = renderRequest;
+var renderCancelId = null;
 function tick() {
     if (rendering) {
         draw();
     }
-    rendering = renderRequest;
+    if (renderRequest != renderRequestOld) {
+        if (renderRequest) {
+            rendering = true;
+        }
+        else {
+            clearTimeout(renderCancelId);
+            renderCancelId = setTimeout(() => {
+                if (!renderRequest) {
+                    rendering = false;
+                }
+            }, 250);
+        }
+        renderRequestOld = renderRequest;
+    }
+
+    
     requestAnimationFrame(tick);
 }
 
@@ -325,7 +366,10 @@ function checkGridLines() {
     }
 
     rows.forEach(row => {
-        grid[row].forEach(c => c.filled = false);
+        grid[row].forEach(c => {
+            c.filled = false;
+            c.fade = fades.length-1;
+        });
         scoreAdd(gridCount);
     });
 
@@ -333,6 +377,7 @@ function checkGridLines() {
         if (filled == true) {
             for (let row = 0; row < gridCount; row++) {
                 grid[row][index].filled = false;
+                grid[row][index].fade = fades.length-1;
                 scoreAdd(1);
             }
         }
@@ -340,8 +385,6 @@ function checkGridLines() {
 }
 
 window.addEventListener('touchstart', e => {
-    e.preventDefault();
-
     renderRequest = true;
 
     var touchX = e.changedTouches[0].pageX;
@@ -361,6 +404,7 @@ window.addEventListener('touchstart', e => {
     else if (shapeTouch.id == null && touchY < canvas.width/5) {
         if (touchX < canvas.width/2) {
             reset();
+            draw();
         }
         else {
             bw = !bw;
@@ -370,7 +414,6 @@ window.addEventListener('touchstart', e => {
 });
 
 window.addEventListener('touchmove', function(e){
-    e.preventDefault();
     if (shapeTouch.id != null) {
         for (let ti = 0; ti < e.changedTouches.length; ti++) {
             var t = e.changedTouches[ti];
@@ -383,7 +426,6 @@ window.addEventListener('touchmove', function(e){
 });
 
 function touchEnd(e) {
-    e.preventDefault();
     if (shapeTouch.id != null && e.changedTouches[0].identifier == shapeTouch.id) {
         var gridCells = [];
         var canPlace = true;

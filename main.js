@@ -75,7 +75,9 @@ var shapes = [
     [2, 2, 6, 1,0,1,1],
     [2, 2, 6, 1,1,1],
     [2, 2, 6, 1,1,0,1],
-    [2, 2, 6, 0,1,1,1]
+    [2, 2, 6, 0,1,1,1],
+    // 1x1
+    [1, 1, 7, 1]
 ];
 
 // http://czechmate777.github.io/FullPicker/?id=8&#567189#562289#893868#893333#895730#897215#50891B#12896C
@@ -498,6 +500,7 @@ function refreshScreenSize() {
 
     shapeCellSize = gridCellSize * shapeSizeFac;
     shapeCellSpacing = gridCellSpacing * shapeSizeFac;
+    draw();
 }
 
 window.addEventListener('resize', refreshScreenSize);

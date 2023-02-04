@@ -398,7 +398,7 @@ window.addEventListener('touchstart', e => {
     var touchY = e.changedTouches[0].pageY;
     
     // Touches if they are over the slots
-    if (shapeTouch.id == null && touchY > canvas.height-slotsHeight) {
+    if (shapeTouch.id == null && touchY > slotsPos-slotsHeight/2 && touchY < slotsPos+slotsHeight/2) {
         var slot = Math.floor(touchX/canvas.width*3);
         shapeTouch = {
             x: touchX,
@@ -491,12 +491,16 @@ function refreshScreenSize() {
     portrait = true;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    slotsHeight = canvas.width/3;
-    slotsPos = canvas.height - slotsHeight/2;
     screenConstraint = Math.min(canvas.width, canvas.height);
     gridCellSize = gridCellSizeFac * screenConstraint;
     gridCellSpacing = gridCellSpacingFac * screenConstraint;
     gridWidth = gridCount*gridCellSize+(gridCount-1)*gridCellSpacing;
+
+    slotsHeight = canvas.width/3;
+    slotsPos = Math.min(
+        canvas.height/2 + gridWidth/2 + slotsHeight*0.75,
+        canvas.height - slotsHeight/2
+    );
 
     shapeCellSize = gridCellSize * shapeSizeFac;
     shapeCellSpacing = gridCellSpacing * shapeSizeFac;

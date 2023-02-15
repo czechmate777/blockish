@@ -119,8 +119,8 @@ function draw() {
     ctx.lineWidth = gridCellSpacing;
     rect(canvas.width/2, canvas.height/2, gridWidth + gridCellSpacing*3, gridWidth + gridCellSpacing*3, true);
 
-    for (let j = 0; j < grid.length; j++) {
-        for (let i = 0; i < grid[j].length; i++) {
+    for (let j = 0; j < gridCount; j++) {
+        for (let i = 0; i < gridCount; i++) {
             if (grid[j][i].filled) {
                 if (!bw && colors[grid[j][i].color] != undefined) {
                     ctx.fillStyle = colors[grid[j][i].color];
@@ -329,6 +329,8 @@ function reset() {
     loadShapeBatch();
 
     currentScore = 0;
+
+    draw();
 }
 
 function loadShapeBatch() {
@@ -391,6 +393,50 @@ function checkGridLines() {
     });
 }
 
+function stillAlive() {
+    // Try and place all available shapes on grid
+    // If one succeeds, we are still alive
+    // TODO: Remove duplicate searches if multiple slots have same shape
+
+    // Slots
+    for (let slotIndex = 0; slotIndex < shapeSlots.length; slotIndex++) {
+        if (shapeSlots[slotIndex] == null) {
+            continue;
+        }
+        var shape = shapes[shapeSlots[slotIndex]];
+        // Grid
+        for (let j = 0; j < gridCount; j++) {
+            for (let i = 0; i < gridCount; i++) {
+                // Shape cells
+                var canPlace = true;
+                for (let si = 0; si < shape.length-shapeStartIndex; si++) {
+                    var shapeCellIndex = si + shapeStartIndex;
+                    if (shape[shapeCellIndex] != 0) {
+                        // Check for filled cell
+                        let x = i + si%shape[0];
+                        let y = j + Math.floor(si/shape[0]);
+                        if (grid[y] && grid[y][x] && !grid[y][x].filled) {
+                            // Valid location, do nothing
+                        }
+                        else {
+                            // Can't place, skip location
+                            canPlace = false;
+                            break;
+                        }
+                    }
+                }
+                // If whole shape fit in this grid location, return not dead
+                if (canPlace) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    // if we get here and nothing fits, death
+    return false;
+}
+
 window.addEventListener('touchstart', e => {
     renderRequest = true;
 
@@ -411,7 +457,6 @@ window.addEventListener('touchstart', e => {
     else if (shapeTouch.id == null && touchY < canvas.width/5) {
         if (touchX < canvas.width/2) {
             reset();
-            draw();
         }
         else {
             bw = !bw;
@@ -468,6 +513,11 @@ function touchEnd(e) {
 
             // Check for filled rows
             checkGridLines();
+
+            // Check for death
+            if(!stillAlive()) {
+                reset();
+            }
         }
         shapeTouch.id = shapeTouch.slot = null;
     }

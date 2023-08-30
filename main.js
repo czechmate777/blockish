@@ -1,3 +1,8 @@
+// Service Worker
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js");
+}
+
 // Vars
 var gridCount = 10;
 var gridCellSizeFac = 0.08;

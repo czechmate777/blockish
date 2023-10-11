@@ -1,4 +1,4 @@
-const cacheName = "blockish-v41";
+const cacheName = "blockish-v42";
 
 self.addEventListener("install", (e) => {
     console.log("[Service Worker] Install");

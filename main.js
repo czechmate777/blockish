@@ -8,6 +8,8 @@ var gridCount = 10;
 var gridCellSizeFac = 0.08;
 var gridCellSpacingFac = 0.01;
 
+var radiusFactor = 1;
+
 var shapeBatchLength = 3;
 
 var colorBG = 'rgb(14, 14, 14)';
@@ -28,6 +30,8 @@ var highScore = 0;
 
 // Canvas
 var portrait = true;
+var appOffsetX = 0;
+var bottomGrace = 10;
 var canvas = document.createElement('canvas');
 var ctx = canvas.getContext('2d');
 document.body.appendChild(canvas);
@@ -122,7 +126,15 @@ function draw() {
     // Grid
     ctx.strokeStyle = colorFilled;
     ctx.lineWidth = gridCellSpacing;
-    rect(canvas.width/2, canvas.height/2, gridWidth + gridCellSpacing*3, gridWidth + gridCellSpacing*3, true);
+    ctx.beginPath();
+    ctx.roundRect(
+        canvas.width/2 - (gridWidth + gridCellSpacing*3)/2,
+        canvas.height/2 - (gridWidth + gridCellSpacing*3)/2,
+        gridWidth + gridCellSpacing*3,
+        gridWidth + gridCellSpacing*3,
+        gridCellSpacing*radiusFactor*2
+    );
+    ctx.stroke();
 
     for (let j = 0; j < gridCount; j++) {
         for (let i = 0; i < gridCount; i++) {
@@ -133,21 +145,27 @@ function draw() {
                 else {
                     ctx.fillStyle = colorFilled;
                 }
-                ctx.fillRect(
+                ctx.beginPath();
+                ctx.roundRect(
                     canvas.width/2 - gridWidth/2 + i*(gridCellSize+gridCellSpacing),
                     canvas.height/2 - gridWidth/2 + j*(gridCellSize+gridCellSpacing),
                     gridCellSize,
-                    gridCellSize
+                    gridCellSize,
+                    gridCellSpacing*radiusFactor
                 );
+                ctx.fill();
             }
             else {
                 ctx.fillStyle = colorEmpty;
-                ctx.fillRect(
+                ctx.beginPath();
+                ctx.roundRect(
                     canvas.width/2 - gridWidth/2 + i*(gridCellSize+gridCellSpacing),
                     canvas.height/2 - gridWidth/2 + j*(gridCellSize+gridCellSpacing),
                     gridCellSize,
-                    gridCellSize
+                    gridCellSize,
+                    gridCellSpacing*radiusFactor
                 );
+                ctx.fill();
                 if (grid[j][i].fade != undefined) {
                     if (!bw && colors[grid[j][i].color] != undefined) {
                         ctx.fillStyle = colors[grid[j][i].color] + fades[grid[j][i].fade];
@@ -155,12 +173,15 @@ function draw() {
                     else {
                         ctx.fillStyle = colorFilled + fades[grid[j][i].fade];
                     }
-                    ctx.fillRect(
+                    ctx.beginPath();
+                    ctx.roundRect(
                         canvas.width/2 - gridWidth/2 + i*(gridCellSize+gridCellSpacing),
                         canvas.height/2 - gridWidth/2 + j*(gridCellSize+gridCellSpacing),
                         gridCellSize,
-                        gridCellSize
+                        gridCellSize,
+                        gridCellSpacing*radiusFactor
                     );
+                    ctx.fill();
 
                     grid[j][i].fade = --grid[j][i].fade < 0 ? undefined : grid[j][i].fade;
                 }
@@ -176,9 +197,11 @@ function draw() {
 
     shapeSlots.forEach((shapeIndex, slotIndex) => {
         if (shapeIndex != null) {
+            // Shape is being dragged
             if (shapeTouch.id != null & slotIndex == shapeTouch.slot) {
                 drawShape(shapeTouch.x, shapeTouch.y-shapeTouch.offset, shapeIndex, gridCellSize, gridCellSpacing);
             }
+            // Shape in slot
             else {
                 drawShape(canvas.width/3 * (slotIndex) + canvas.width/6, slotsPos, shapeIndex, shapeCellSize, shapeCellSpacing);
             }
@@ -212,10 +235,10 @@ function draw() {
 
 function rect(x, y, w, h, s) {
     if (s) {
-        ctx.strokeRect(x - w/2, y - h/2, w, h);
+        ctx.strokeRect(x - w/2, y - (h ?? w)/2, w, (h ?? w));
     }
     else {
-        ctx.fillRect(x - w/2, y - h/2, w, h);
+        ctx.fillRect(x - w/2, y - (h ?? w)/2, w, (h ?? w));
     }
 }
 
@@ -232,12 +255,15 @@ function drawShape(x, y, shapeIndex, cellSize, padding) {
     for (let si = 0; si < shape.length-shapeStartIndex; si++) {
         var shapeCellIndex = si + shapeStartIndex;
         if (shape[shapeCellIndex] != 0) {
-            ctx.fillRect(
+            ctx.beginPath();
+            ctx.roundRect(
                 x - shapeWidth/2 + si%shape[0] * (cellSize+padding) + padding/2,
                 y - shapeHeight/2 + Math.floor(si/shape[0]) * (cellSize+padding) + padding/2,
                 cellSize,
-                cellSize
+                cellSize,
+                padding*radiusFactor
             );
+            ctx.fill();
         }
     }
 }
@@ -445,7 +471,7 @@ function stillAlive() {
 window.addEventListener('touchstart', e => {
     renderRequest = true;
 
-    var touchX = e.changedTouches[0].pageX;
+    var touchX = e.changedTouches[0].pageX - appOffsetX;
     var touchY = e.changedTouches[0].pageY;
     
     // Touches if they are over the slots
@@ -475,7 +501,7 @@ window.addEventListener('touchmove', function(e){
         for (let ti = 0; ti < e.changedTouches.length; ti++) {
             var t = e.changedTouches[ti];
             if (t.identifier == shapeTouch.id) {
-                shapeTouch.x = t.pageX;
+                shapeTouch.x = t.pageX - appOffsetX;
                 shapeTouch.y = t.pageY;
             }
         };
@@ -544,8 +570,9 @@ function screenToGrid(x, y) {
 
 function refreshScreenSize() {
     portrait = true;
-    canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    canvas.width = Math.min(window.innerWidth, window.innerHeight * 5/8);
+    appOffsetX = (window.innerWidth - canvas.width) / 2;
     screenConstraint = Math.min(canvas.width, canvas.height);
     gridCellSize = gridCellSizeFac * screenConstraint;
     gridCellSpacing = gridCellSpacingFac * screenConstraint;
@@ -553,8 +580,10 @@ function refreshScreenSize() {
 
     slotsHeight = canvas.width/3;
     slotsPos = Math.min(
+        // Tall screen
         canvas.height/2 + gridWidth/2 + slotsHeight*0.75,
-        canvas.height - slotsHeight/2
+        // Short screen
+        canvas.height - slotsHeight/2 - bottomGrace
     );
 
     shapeCellSize = gridCellSize * shapeSizeFac;

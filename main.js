@@ -8,16 +8,17 @@ var gridCount = 10;
 var gridCellSizeFac = 0.08;
 var gridCellSpacingFac = 0.01;
 
-var radiusFactor = 1;
+var radiusFactor = 0.15;
+var style = 0;
 
 var shapeBatchLength = 3;
 
+var lw = 0.1
+var color;
 var colorBG = 'rgb(14, 14, 14)';
 var colorEmpty = 'rgba(120, 120, 120, 0.2)';
 var colorFilled = '#787878';
 var colorReset = "#ffffff33";
-
-var bw = false;
 
 // Comps
 
@@ -31,7 +32,7 @@ var highScore = 0;
 // Canvas
 var portrait = true;
 var appOffsetX = 0;
-var bottomGrace = 10;
+var bottomGrace = 5;
 var canvas = document.createElement('canvas');
 var ctx = canvas.getContext('2d');
 document.body.appendChild(canvas);
@@ -123,65 +124,64 @@ function draw() {
     ctx.fillStyle = colorBG;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Grid
-    ctx.strokeStyle = colorFilled;
-    ctx.lineWidth = gridCellSpacing;
-    ctx.beginPath();
-    ctx.roundRect(
-        canvas.width/2 - (gridWidth + gridCellSpacing*3)/2,
-        canvas.height/2 - (gridWidth + gridCellSpacing*3)/2,
-        gridWidth + gridCellSpacing*3,
-        gridWidth + gridCellSpacing*3,
-        gridCellSpacing*radiusFactor*2
-    );
-    ctx.stroke();
+    // // Grid
+    // ctx.strokeStyle = colorFilled;
+    // ctx.lineWidth = gridCellSpacing;
+    // ctx.beginPath();
+    // ctx.roundRect(
+    //     canvas.width/2 - (gridWidth + gridCellSpacing*3)/2,
+    //     canvas.height/2 - (gridWidth + gridCellSpacing*3)/2,
+    //     gridWidth + gridCellSpacing*3,
+    //     gridWidth + gridCellSpacing*3,
+    //     gridCellSpacing*radiusFactor*2
+    // );
+    // ctx.stroke();
+
+    rect({
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        w: gridWidth + gridCellSpacing * 4,
+        s: 3,
+        c: colorFilled,
+        r: gridCellSize * radiusFactor * 2.5,
+        l: gridCellSize * lw
+    });
 
     for (let j = 0; j < gridCount; j++) {
         for (let i = 0; i < gridCount; i++) {
             if (grid[j][i].filled) {
-                if (!bw && colors[grid[j][i].color] != undefined) {
-                    ctx.fillStyle = colors[grid[j][i].color];
+                if ((style == 0 || style == 2) && colors[grid[j][i].color] != undefined) {
+                    color = colors[grid[j][i].color];
                 }
                 else {
-                    ctx.fillStyle = colorFilled;
+                    color = colorFilled;
                 }
-                ctx.beginPath();
-                ctx.roundRect(
-                    canvas.width/2 - gridWidth/2 + i*(gridCellSize+gridCellSpacing),
-                    canvas.height/2 - gridWidth/2 + j*(gridCellSize+gridCellSpacing),
-                    gridCellSize,
-                    gridCellSize,
-                    gridCellSpacing*radiusFactor
-                );
-                ctx.fill();
+                rect({
+                    x: canvas.width/2 - (gridWidth - gridCellSize)/2 + i*(gridCellSize+gridCellSpacing),
+                    y: canvas.height/2 - (gridWidth - gridCellSize)/2 + j*(gridCellSize+gridCellSpacing),
+                    w: gridCellSize
+                });
             }
             else {
-                ctx.fillStyle = colorEmpty;
-                ctx.beginPath();
-                ctx.roundRect(
-                    canvas.width/2 - gridWidth/2 + i*(gridCellSize+gridCellSpacing),
-                    canvas.height/2 - gridWidth/2 + j*(gridCellSize+gridCellSpacing),
-                    gridCellSize,
-                    gridCellSize,
-                    gridCellSpacing*radiusFactor
-                );
-                ctx.fill();
+                color = colorEmpty;
+                rect({
+                    x: canvas.width/2 - (gridWidth - gridCellSize)/2 + i*(gridCellSize+gridCellSpacing),
+                    y: canvas.height/2 - (gridWidth - gridCellSize)/2 + j*(gridCellSize+gridCellSpacing),
+                    w: gridCellSize
+                });
+                
                 if (grid[j][i].fade != undefined) {
-                    if (!bw && colors[grid[j][i].color] != undefined) {
-                        ctx.fillStyle = colors[grid[j][i].color] + fades[grid[j][i].fade];
+                    if ((style == 0 || style == 2) && colors[grid[j][i].color] != undefined) {
+                        color = colors[grid[j][i].color] + fades[grid[j][i].fade];
                     }
                     else {
-                        ctx.fillStyle = colorFilled + fades[grid[j][i].fade];
+                        color = colorFilled + fades[grid[j][i].fade];
                     }
-                    ctx.beginPath();
-                    ctx.roundRect(
-                        canvas.width/2 - gridWidth/2 + i*(gridCellSize+gridCellSpacing),
-                        canvas.height/2 - gridWidth/2 + j*(gridCellSize+gridCellSpacing),
-                        gridCellSize,
-                        gridCellSize,
-                        gridCellSpacing*radiusFactor
-                    );
-                    ctx.fill();
+                    rect({
+                        x: canvas.width/2 - (gridWidth - gridCellSize)/2 + i*(gridCellSize+gridCellSpacing),
+                        y: canvas.height/2 - (gridWidth - gridCellSize)/2 + j*(gridCellSize+gridCellSpacing),
+                        w: gridCellSize
+                    });
 
                     grid[j][i].fade = --grid[j][i].fade < 0 ? undefined : grid[j][i].fade;
                 }
@@ -233,37 +233,54 @@ function draw() {
     ctx.fillText("🎨", canvas.width/2, canvas.width/10);
 }
 
-function rect(x, y, w, h, s) {
-    if (s) {
-        ctx.strokeRect(x - w/2, y - (h ?? w)/2, w, (h ?? w));
+function rect(obj) {
+    // Normalize values
+    obj.w ??= obj.h;
+    obj.h ??= obj.w;
+    obj.c ??= color;
+    obj.s ??= style;
+    obj.r ??= obj.w * radiusFactor;
+    obj.l ??= obj.w * lw;
+
+    ctx.beginPath();
+
+    if (obj.s == 0 || obj.s == 1) {
+        ctx.roundRect(obj.x - obj.w/2, obj.y - obj.h/2, obj.w, obj.h, obj.r);
+        ctx.fillStyle = obj.c;
+        ctx.fill();
     }
-    else {
-        ctx.fillRect(x - w/2, y - (h ?? w)/2, w, (h ?? w));
+    if (obj.s == 2 || obj.s == 3) {
+        ctx.roundRect(
+            obj.x - obj.w/2 + obj.l/2,
+            obj.y - obj.h/2 + obj.l/2,
+            obj.w - obj.l,
+            obj.h - obj.l,
+            obj.r
+        );
+        ctx.lineWidth = obj.l;
+        ctx.strokeStyle = obj.c
+        ctx.stroke();
     }
 }
 
 function drawShape(x, y, shapeIndex, cellSize, padding) {
     var shape = shapes[shapeIndex];
-    if (!bw && colors[shape[2]] != undefined) {
-        ctx.fillStyle = colors[shape[2]];
+    if ((style == 0 || style == 2) && colors[shape[2]] != undefined) {
+        color = colors[shape[2]];
     }
     else {
-        ctx.fillStyle = colorFilled;
+        color = colorFilled;
     }
-    var shapeWidth = shape[0]*(cellSize+padding);
-    var shapeHeight = shape[1]*(cellSize+padding);
+    var shapeWidth = (shape[0]-1)*(cellSize+padding);
+    var shapeHeight = (shape[1]-1)*(cellSize+padding);
     for (let si = 0; si < shape.length-shapeStartIndex; si++) {
         var shapeCellIndex = si + shapeStartIndex;
         if (shape[shapeCellIndex] != 0) {
-            ctx.beginPath();
-            ctx.roundRect(
-                x - shapeWidth/2 + si%shape[0] * (cellSize+padding) + padding/2,
-                y - shapeHeight/2 + Math.floor(si/shape[0]) * (cellSize+padding) + padding/2,
-                cellSize,
-                cellSize,
-                padding*radiusFactor
-            );
-            ctx.fill();
+            rect({
+                x: x - shapeWidth/2 + si%shape[0] * (cellSize+padding),
+                y: y - shapeHeight/2 + Math.floor(si/shape[0]) * (cellSize+padding),
+                w: cellSize
+            });
         }
     }
 }
@@ -302,6 +319,7 @@ tick();
 function loadProgress() {
     currentScore = localStorage.currentScore ? parseInt(localStorage.currentScore) : currentScore;
     highScore = localStorage.highScore ? parseInt(localStorage.highScore) : highScore;
+    style = localStorage.style ? parseInt(localStorage.style) : style;
 
     if (localStorage.grid) {
         localStorage.grid.split("|").forEach((inString, index) => {
@@ -332,10 +350,6 @@ function loadProgress() {
             }
         });
     }
-
-    if (localStorage.bw) {
-        bw = localStorage.bw === 'true';
-    }
 }
 
 function saveProgress() {
@@ -343,7 +357,7 @@ function saveProgress() {
     localStorage.shapeSlots = shapeSlots;
     localStorage.currentScore = currentScore;
     localStorage.highScore = highScore;
-    localStorage.bw = bw;
+    localStorage.style = style;
 }
 
 function reset() {
@@ -490,7 +504,7 @@ window.addEventListener('touchstart', e => {
             reset();
         }
         else {
-            bw = !bw;
+            style = (style + 1) % 4;
             draw();
         }
     }

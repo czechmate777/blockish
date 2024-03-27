@@ -13,7 +13,9 @@ var style = 0;
 
 var shapeBatchLength = 3;
 
-var lw = 0.1
+var undoState = false;
+
+var lw = 0.1;
 var color;
 var colorBG = 'rgb(14, 14, 14)';
 var colorEmpty = 'rgba(120, 120, 120, 0.2)';
@@ -316,13 +318,17 @@ refreshScreenSize();
 draw();
 tick();
 
-function loadProgress() {
-    currentScore = localStorage.currentScore ? parseInt(localStorage.currentScore) : currentScore;
-    highScore = localStorage.highScore ? parseInt(localStorage.highScore) : highScore;
-    style = localStorage.style ? parseInt(localStorage.style) : style;
+function loadProgress(undoOnly = false) {
+    var store = localStorage;
+    if (undoOnly) {
+        store = localStorage.old ?? localStorage;
+    }
+    currentScore = store.currentScore ? parseInt(store.currentScore) : currentScore;
+    highScore = store.highScore ? parseInt(store.highScore) : highScore;
+    style = store.style ? parseInt(store.style) : style;
 
-    if (localStorage.grid) {
-        localStorage.grid.split("|").forEach((inString, index) => {
+    if (store.grid) {
+        store.grid.split("|").forEach((inString, index) => {
             const j = Math.floor(index/gridCount);
             const i = index%gridCount;
             inVals = inString.split(",");
@@ -340,8 +346,8 @@ function loadProgress() {
         });
     }
 
-    if (localStorage.shapeSlots) {
-        shapeSlots = localStorage.shapeSlots.split(",", shapeSlots.length).map(s => {
+    if (store.shapeSlots) {
+        shapeSlots = store.shapeSlots.split(",", shapeSlots.length).map(s => {
             if (s == "") {
                 return null;
             }
@@ -353,6 +359,8 @@ function loadProgress() {
 }
 
 function saveProgress() {
+    localStorage.old = undefined;
+    localStorage.old = localStorage;
     localStorage.grid = grid.flat().map(c => Object.entries(c)).join("|");
     localStorage.shapeSlots = shapeSlots;
     localStorage.currentScore = currentScore;
@@ -361,6 +369,9 @@ function saveProgress() {
 }
 
 function reset() {
+    if (undoState) {
+        undoState = false;
+// TODO: Fix mobile code
     // Grid
     for (let i = 0; i < gridCount; i++) {
         grid[i] = [];
@@ -376,6 +387,12 @@ function reset() {
     currentScore = 0;
 
     draw();
+
+    }
+    else {
+        undoState = true;
+        loadProgress(true);
+    }
 }
 
 function loadShapeBatch() {

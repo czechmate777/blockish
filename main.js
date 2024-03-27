@@ -359,6 +359,8 @@ function loadProgress(undoOnly = false) {
 }
 
 function saveProgress() {
+    undoState = false;
+
     localStorage.old = undefined;
     localStorage.old = localStorage;
     localStorage.grid = grid.flat().map(c => Object.entries(c)).join("|");

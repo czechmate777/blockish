@@ -417,7 +417,7 @@ function clearShapeSlot(slotIndex) {
     if (shapeSlots.every(s => s == null)) {
         loadShapeBatch();
     }
-    saveProgress();
+    // saveProgress();
 }
 
 function scoreAdd(points) {
@@ -425,7 +425,7 @@ function scoreAdd(points) {
     if (currentScore > highScore) {
         highScore = currentScore;
     }
-    saveProgress();
+    // saveProgress();
 }
 
 function checkGridLines() {
@@ -591,6 +591,7 @@ function touchEnd(e) {
             if(!stillAlive()) {
                 reset();
             }
+            saveProgress();
         }
         shapeTouch.id = shapeTouch.slot = null;
     }

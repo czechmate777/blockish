@@ -325,15 +325,16 @@ tick();
 
 function loadProgress(undoOnly = false) {
     var store = localStorage;
+    var storeSuffix = "";
     if (undoOnly) {
-        store = localStorage.old ?? localStorage;
+        storeSuffix = "Old";
     }
-    currentScore = store.currentScore ? parseInt(store.currentScore) : currentScore;
-    highScore = store.highScore ? parseInt(store.highScore) : highScore;
-    style = store.style ? parseInt(store.style) : style;
+    currentScore = store["currentScore" + storeSuffix] ? parseInt(store["currentScore" + storeSuffix]) : currentScore;
+    highScore = store["highScore" + storeSuffix] ? parseInt(store["highScore" + storeSuffix]) : highScore;
+    style = store.style" + storeSuffix] ? parseInt(store.style" + storeSuffix]) : style;
 
-    if (store.grid) {
-        store.grid.split("|").forEach((inString, index) => {
+    if (store["grid" + storeSuffix]) {
+        store.grid" + storeSuffix].split("|").forEach((inString, index) => {
             const j = Math.floor(index/gridCount);
             const i = index%gridCount;
             inVals = inString.split(",");
@@ -351,8 +352,8 @@ function loadProgress(undoOnly = false) {
         });
     }
 
-    if (store.shapeSlots) {
-        shapeSlots = store.shapeSlots.split(",", shapeSlots.length).map(s => {
+    if (store.shapeSlots" + storeSuffix]) {
+        shapeSlots = store["shapeSlots" + storeSuffix].split(",", shapeSlots.length).map(s => {
             if (s == "") {
                 return null;
             }
@@ -366,8 +367,11 @@ function loadProgress(undoOnly = false) {
 function saveProgress() {
     undoState = false;
 
-    localStorage.old = undefined;
-    localStorage.old = localStorage;
+    localStorage.gridOld = localStorage.grid;
+    localStorage.shapeSlotsOld = localStorage.shapeSlots;
+    localStorage.currentScoreOld = localStorage.currentScore;
+    localStorage.highScoreOld = localStorage.highScore;
+
     localStorage.grid = grid.flat().map(c => Object.entries(c)).join("|");
     localStorage.shapeSlots = shapeSlots;
     localStorage.currentScore = currentScore;

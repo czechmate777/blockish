@@ -331,10 +331,10 @@ function loadProgress(undoOnly = false) {
     }
     currentScore = store["currentScore" + storeSuffix] ? parseInt(store["currentScore" + storeSuffix]) : currentScore;
     highScore = store["highScore" + storeSuffix] ? parseInt(store["highScore" + storeSuffix]) : highScore;
-    style = store.style" + storeSuffix] ? parseInt(store.style" + storeSuffix]) : style;
+    style = store.style ? parseInt(store.style) : style;
 
     if (store["grid" + storeSuffix]) {
-        store.grid" + storeSuffix].split("|").forEach((inString, index) => {
+        store["grid" + storeSuffix].split("|").forEach((inString, index) => {
             const j = Math.floor(index/gridCount);
             const i = index%gridCount;
             inVals = inString.split(",");

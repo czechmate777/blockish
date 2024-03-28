@@ -351,7 +351,7 @@ function loadProgress(undoOnly = false) {
             }
         });
     }
-    debugger;
+
     if (store["shapeSlots" + storeSuffix]) {
         shapeSlots = store["shapeSlots" + storeSuffix].split(",", shapeSlots.length).map(s => {
             if (s == "") {

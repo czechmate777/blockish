@@ -352,7 +352,7 @@ function loadProgress(undoOnly = false) {
         });
     }
 
-    if (store.shapeSlots" + storeSuffix]) {
+    if (store["shapeSlots" + storeSuffix]) {
         shapeSlots = store["shapeSlots" + storeSuffix].split(",", shapeSlots.length).map(s => {
             if (s == "") {
                 return null;

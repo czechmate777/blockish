@@ -152,10 +152,13 @@ function draw() {
     for (let j = 0; j < gridCount; j++) {
         for (let i = 0; i < gridCount; i++) {
             if (grid[j][i].filled) {
-                if ((style == 0 || style == 2) && colors[grid[j][i].color] != undefined) {
+                if ((style == 0 || style == 2) && colors[grid[j][i].color] != undefined) { // Coloured
                     color = colors[grid[j][i].color];
                 }
-                else {
+                else if (style == 4) { // Gradient
+                    color = "#337799";
+                }
+                else { // Mono
                     color = colorFilled;
                 }
                 rect({
@@ -173,10 +176,12 @@ function draw() {
                 });
                 
                 if (grid[j][i].fade != undefined) {
-                    if ((style == 0 || style == 2) && colors[grid[j][i].color] != undefined) {
+                    if ((style == 0 || style == 2) && colors[grid[j][i].color] != undefined) { // Coloured
                         color = colors[grid[j][i].color] + fades[grid[j][i].fade];
                     }
-                    else {
+                    else if (style == 4) { // Gradient
+                    }
+                    else { // Mono
                         color = colorFilled + fades[grid[j][i].fade];
                     }
                     rect({
@@ -251,12 +256,12 @@ function rect(obj) {
 
     ctx.beginPath();
 
-    if (obj.s == 0 || obj.s == 1) {
+    if (obj.s == 0 || obj.s == 1 || obj.s == 4) {
         ctx.roundRect(obj.x - obj.w/2, obj.y - obj.h/2, obj.w, obj.h, obj.r);
         ctx.fillStyle = obj.c;
         ctx.fill();
     }
-    if (obj.s == 2 || obj.s == 3) {
+    else {
         ctx.roundRect(
             obj.x - obj.w/2 + obj.l/2,
             obj.y - obj.h/2 + obj.l/2,
@@ -527,12 +532,13 @@ window.addEventListener('touchstart', e => {
             id: e.changedTouches[0].identifier
         };
     }
-    else if (shapeTouch.id == null && touchY < canvas.width/5) {
+    // Top bar touches
+    else if (shapeTouch.id == null && touchY > 5 && touchY < canvas.width/5) {
         if (touchX < canvas.width/2) {
             reset();
         }
         else {
-            style = (style + 1) % 4;
+            style = (style + 1) % 5;
             draw();
         }
     }

@@ -156,7 +156,11 @@ function draw() {
                     color = colors[grid[j][i].color];
                 }
                 else if (style == 4) { // Gradient
-                    color = "#337799";
+                    // left-right
+                    var lr = Math.floor((i+1)/gridCount*255).toString(16)
+                    // up-down
+                    var ud = Math.floor((j+1)/gridCount*255).toString(16)
+                    color = `#${ud}77${lr}`;
                 }
                 else { // Mono
                     color = colorFilled;

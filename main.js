@@ -537,7 +537,7 @@ window.addEventListener('touchstart', e => {
         };
     }
     // Top bar touches
-    else if (shapeTouch.id == null && touchY > 5 && touchY < canvas.width/5) {
+    else if (shapeTouch.id == null && touchY > 10 && touchY < canvas.width/5) {
         if (touchX < canvas.width/2) {
             reset();
         }

@@ -110,6 +110,7 @@ var slotsHeight = 0;
 var slotsPos = 0;
 
 shapeSlots = [];
+loadFutureShapeSlots = false;
 loadShapeBatch();
 
 var shapeTouch = {
@@ -337,6 +338,7 @@ function loadProgress(undoOnly = false) {
     var storeSuffix = "";
     if (undoOnly) {
         storeSuffix = "Old";
+        loadFutureShapeSlots = true;
     }
     currentScore = store["currentScore" + storeSuffix] ? parseInt(store["currentScore" + storeSuffix]) : currentScore;
     highScore = store["highScore" + storeSuffix] ? parseInt(store["highScore" + storeSuffix]) : highScore;
@@ -383,6 +385,7 @@ function saveProgress() {
 
     localStorage.grid = grid.flat().map(c => Object.entries(c)).join("|");
     localStorage.shapeSlots = shapeSlots;
+    localStorage.futureShapeSlots = futureShapeSlots;
     localStorage.currentScore = currentScore;
     localStorage.highScore = highScore;
     localStorage.style = style;
@@ -391,23 +394,19 @@ function saveProgress() {
 function reset() {
     if (undoState) {
         undoState = false;
-// TODO: Fix mobile code
-    // Grid
-    for (let i = 0; i < gridCount; i++) {
-        grid[i] = [];
-        for (let j = 0; j < gridCount; j++) {
-            grid[i][j] = {
-                filled: false
-            };
+
+        // Grid
+        for (let i = 0; i < gridCount; i++) {
+            grid[i] = [];
+            for (let j = 0; j < gridCount; j++) {
+                grid[i][j] = {
+                    filled: false
+                };
+            }
         }
-    }
-
-    loadShapeBatch();
-
-    currentScore = 0;
-
-    draw();
-
+        loadShapeBatch();
+        currentScore = 0;
+        draw();
     }
     else {
         undoState = true;
@@ -416,8 +415,14 @@ function reset() {
 }
 
 function loadShapeBatch() {
-    for (let s = 0; s < shapeBatchLength; s++) {
-        shapeSlots[s] = Math.floor(Math.random()*shapes.length);
+    if (loadFutureShapeSlots) {
+        shapeSlots = futureShapeSlots;
+    }
+    else {
+        for (let s = 0; s < shapeBatchLength; s++) {
+            shapeSlots[s] = Math.floor(Math.random()*shapes.length);
+            futureShapeSlots = shapeSlots;
+        }
     }
 }
 
@@ -426,7 +431,7 @@ function clearShapeSlot(slotIndex) {
     if (shapeSlots.every(s => s == null)) {
         loadShapeBatch();
     }
-    // saveProgress();
+    loadFutureShapeSlots = false;
 }
 
 function scoreAdd(points) {
@@ -434,7 +439,6 @@ function scoreAdd(points) {
     if (currentScore > highScore) {
         highScore = currentScore;
     }
-    // saveProgress();
 }
 
 function checkGridLines() {

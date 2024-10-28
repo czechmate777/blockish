@@ -628,7 +628,7 @@ function screenToGrid(x, y) {
 function refreshScreenSize() {
     portrait = true;
     canvas.height = window.innerHeight;
-    canvas.width = Math.min(window.innerWidth, window.innerHeight * 5/8);
+    canvas.width = Math.min(window.innerWidth, window.innerHeight * 6/8);
     appOffsetX = (window.innerWidth - canvas.width) / 2;
     screenConstraint = Math.min(canvas.width, canvas.height);
     gridCellSize = gridCellSizeFac * screenConstraint;

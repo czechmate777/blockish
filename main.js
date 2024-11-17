@@ -121,6 +121,21 @@ var shapeTouch = {
     id: null
 };
 
+// Screen
+var yOffset = -50;
+
+// Debug
+var debuggingEnabled = false;
+var debugText = "😮";
+var debugTouches = 0;
+
+setInterval(() => {
+    if (debugTouches > 5) {
+        debuggingEnabled = !debuggingEnabled;
+    }
+    debugTouches = 0;
+}, 1000);
+
 // Draw
 function draw() {
     // Blank
@@ -140,9 +155,10 @@ function draw() {
     // );
     // ctx.stroke();
 
+    // Grid Frame
     rect({
         x: canvas.width / 2,
-        y: canvas.height / 2,
+        y: canvas.height / 2 + yOffset,
         w: gridWidth + gridCellSpacing * 4,
         s: 3,
         c: colorFilled,
@@ -152,6 +168,7 @@ function draw() {
 
     for (let j = 0; j < gridCount; j++) {
         for (let i = 0; i < gridCount; i++) {
+            // Cell is filled
             if (grid[j][i].filled) {
                 if ((style == 0 || style == 2) && colors[grid[j][i].color] != undefined) { // Coloured
                     color = colors[grid[j][i].color];
@@ -166,20 +183,15 @@ function draw() {
                 else { // Mono
                     color = colorFilled;
                 }
-                rect({
-                    x: canvas.width/2 - (gridWidth - gridCellSize)/2 + i*(gridCellSize+gridCellSpacing),
-                    y: canvas.height/2 - (gridWidth - gridCellSize)/2 + j*(gridCellSize+gridCellSpacing),
-                    w: gridCellSize
-                });
+                drawGridRect(i, j);
             }
+            // Cell is empty
             else {
+                // Draw empty bottom layer
                 color = colorEmpty;
-                rect({
-                    x: canvas.width/2 - (gridWidth - gridCellSize)/2 + i*(gridCellSize+gridCellSpacing),
-                    y: canvas.height/2 - (gridWidth - gridCellSize)/2 + j*(gridCellSize+gridCellSpacing),
-                    w: gridCellSize
-                });
+                drawGridRect(i, j);
                 
+                // Draw fade layer if needed
                 if (grid[j][i].fade != undefined) {
                     if ((style == 0 || style == 2) && colors[grid[j][i].color] != undefined) { // Coloured
                         color = colors[grid[j][i].color] + fades[grid[j][i].fade];
@@ -189,12 +201,7 @@ function draw() {
                     else { // Mono
                         color = colorFilled + fades[grid[j][i].fade];
                     }
-                    rect({
-                        x: canvas.width/2 - (gridWidth - gridCellSize)/2 + i*(gridCellSize+gridCellSpacing),
-                        y: canvas.height/2 - (gridWidth - gridCellSize)/2 + j*(gridCellSize+gridCellSpacing),
-                        w: gridCellSize
-                    });
-
+                    drawGridRect(i, j);
                     grid[j][i].fade = --grid[j][i].fade < 0 ? undefined : grid[j][i].fade;
                 }
             }
@@ -226,16 +233,16 @@ function draw() {
 
     // Scores
     ctx.fillStyle = colorFilled;
-    ctx.textAlign = "left"
+    ctx.textAlign = "left";
     ctx.font = canvas.width/10 + "px arial";
     ctx.fillText(currentScore, 10, canvas.width/10, canvas.width/2 - canvas.width/10);
     ctx.fillStyle = colorEmpty;
-    ctx.textAlign = "right"
+    ctx.textAlign = "right";
     ctx.font = canvas.width/10 + "px arial";
     ctx.fillText(highScore, canvas.width - 10, canvas.width/10, canvas.width/2 - canvas.width/10);
 
     ctx.fillStyle = colorReset;
-    ctx.textAlign = "right"
+    ctx.textAlign = "right";
     ctx.font = canvas.width/10 + "px arial";
     if (undoState) {
         ctx.fillText("↺ ", canvas.width/2, canvas.width/10);
@@ -245,9 +252,16 @@ function draw() {
     }
     
     ctx.fillStyle = colorReset;
-    ctx.textAlign = "left"
+    ctx.textAlign = "left";
     ctx.font = canvas.width/10 + "px arial";
     ctx.fillText("🎨", canvas.width/2, canvas.width/10);
+
+    // Debug
+    if (debuggingEnabled) {
+        ctx.fillStyle = colorFilled;
+        ctx.textAlign = "center";
+        ctx.fillText(debugText, canvas.width/2, canvas.height/2);
+    }
 }
 
 function rect(obj) {
@@ -278,6 +292,14 @@ function rect(obj) {
         ctx.strokeStyle = obj.c
         ctx.stroke();
     }
+}
+
+function drawGridRect(i, j) {
+    rect({
+        x: canvas.width/2 - (gridWidth - gridCellSize)/2 + i*(gridCellSize+gridCellSpacing),
+        y: canvas.height/2 - (gridWidth - gridCellSize)/2 + j*(gridCellSize+gridCellSpacing) + yOffset,
+        w: gridCellSize
+    });
 }
 
 function drawShape(x, y, shapeIndex, cellSize, padding) {
@@ -547,6 +569,7 @@ window.addEventListener('touchstart', e => {
         }
         else {
             style = (style + 1) % 5;
+            debugTouches++;
             draw();
         }
     }
@@ -560,6 +583,14 @@ window.addEventListener('touchmove', function(e){
                 shapeTouch.x = t.pageX - appOffsetX;
                 shapeTouch.y = t.pageY;
             }
+        };
+    }
+    else {
+        // Clean up this dupe
+        for (let ti = 0; ti < e.changedTouches.length; ti++) {
+            var t = e.changedTouches[ti];
+            var gridPoint = screenToGrid(t.pageX, t.pageY);
+            debugText = `X: ${gridPoint.x}   y: ${gridPoint.y}`;
         };
     }
 });
@@ -618,7 +649,7 @@ function screenToGrid(x, y) {
     var xMid = x-canvas.width/2;
     var xUnits = xMid/(gridCellSize+gridCellSpacing);
     var xGrid = Math.floor(gridCount/2 + xUnits);
-    var yMid = y-canvas.height/2;
+    var yMid = y-canvas.height/2 - yOffset;
     var yUnits = yMid/(gridCellSize+gridCellSpacing);
     var yGrid = Math.floor(gridCount/2 + yUnits);
 
@@ -628,7 +659,7 @@ function screenToGrid(x, y) {
 function refreshScreenSize() {
     portrait = true;
     canvas.height = window.innerHeight;
-    canvas.width = Math.min(window.innerWidth, window.innerHeight * 6/8);
+    canvas.width = Math.min(window.innerWidth, window.innerHeight * 0.7);
     appOffsetX = (window.innerWidth - canvas.width) / 2;
     screenConstraint = Math.min(canvas.width, canvas.height);
     gridCellSize = gridCellSizeFac * screenConstraint;
@@ -638,10 +669,12 @@ function refreshScreenSize() {
     slotsHeight = canvas.width/3;
     slotsPos = Math.min(
         // Tall screen
-        canvas.height/2 + gridWidth/2 + slotsHeight*0.75,
+        canvas.height/2 + gridWidth/2 + slotsHeight*0.65,
         // Short screen
         canvas.height - slotsHeight/2 - bottomGrace
     );
+
+    yOffset = slotsPos - slotsHeight*0.65 - canvas.height/2 - gridWidth/2
 
     shapeCellSize = gridCellSize * shapeSizeFac;
     shapeCellSpacing = gridCellSpacing * shapeSizeFac;

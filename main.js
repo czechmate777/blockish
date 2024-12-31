@@ -126,7 +126,7 @@ var yOffset = -50;
 
 // Debug
 var debuggingEnabled = false;
-var debugText = "😮";
+var debugText = "😮 24.12.30.1";
 var debugTouches = 0;
 
 setInterval(() => {
@@ -141,19 +141,6 @@ function draw() {
     // Blank
     ctx.fillStyle = colorBG;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // // Grid
-    // ctx.strokeStyle = colorFilled;
-    // ctx.lineWidth = gridCellSpacing;
-    // ctx.beginPath();
-    // ctx.roundRect(
-    //     canvas.width/2 - (gridWidth + gridCellSpacing*3)/2,
-    //     canvas.height/2 - (gridWidth + gridCellSpacing*3)/2,
-    //     gridWidth + gridCellSpacing*3,
-    //     gridWidth + gridCellSpacing*3,
-    //     gridCellSpacing*radiusFactor*2
-    // );
-    // ctx.stroke();
 
     // Grid Frame
     rect({
@@ -413,8 +400,8 @@ function saveProgress() {
     localStorage.style = style;
 }
 
-function reset() {
-    if (undoState) {
+function reset(force) {
+    if (undoState || force) {
         undoState = false;
 
         // Grid
@@ -634,7 +621,7 @@ function touchEnd(e) {
 
             // Check for death
             if(!stillAlive()) {
-                reset();
+                reset(true);
             }
             saveProgress();
         }

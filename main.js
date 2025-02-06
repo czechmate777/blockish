@@ -263,12 +263,12 @@ function rect(obj) {
     ctx.beginPath();
 
     if (obj.s == 0 || obj.s == 1 || obj.s == 4) {
-        ctx.roundRect(obj.x - obj.w/2, obj.y - obj.h/2, obj.w, obj.h, obj.r);
+        roundRect(obj.x - obj.w/2, obj.y - obj.h/2, obj.w, obj.h, obj.r);
         ctx.fillStyle = obj.c;
         ctx.fill();
     }
     else {
-        ctx.roundRect(
+        roundRect(
             obj.x - obj.w/2 + obj.l/2,
             obj.y - obj.h/2 + obj.l/2,
             obj.w - obj.l,
@@ -278,6 +278,15 @@ function rect(obj) {
         ctx.lineWidth = obj.l;
         ctx.strokeStyle = obj.c
         ctx.stroke();
+    }
+}
+
+function roundRect(x, y, w, h, r) {
+    if (ctx.roundRect) {
+        ctx.roundRect(x, y, w, h, r);
+    }
+    else {
+        ctx.rect(x, y, w, h);
     }
 }
 

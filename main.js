@@ -253,12 +253,12 @@ function draw() {
 
 function rect(obj) {
     // Normalize values
-    obj.w ??= obj.h;
-    obj.h ??= obj.w;
-    obj.c ??= color;
-    obj.s ??= style;
-    obj.r ??= obj.w * radiusFactor;
-    obj.l ??= obj.w * lw;
+    obj.w = obj.w == null ? obj.h : obj.w;
+    obj.h = obj.h == null ? obj.w : obj.h;
+    obj.c = obj.c == null ? color : obj.c;
+    obj.s = obj.s == null ? style : obj.s;
+    obj.r = obj.r == null ? obj.w * radiusFactor : obj.r;
+    obj.l = obj.l == null ? obj.w * lw : obj.l;
 
     ctx.beginPath();
 

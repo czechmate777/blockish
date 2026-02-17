@@ -44,5 +44,8 @@ window.blockish = {
     stillAlive,
     scoreAdd,
     clearGridForTest,
-    setShapeSlotsForTest
+    setShapeSlotsForTest,
+    reset,
+    loadProgress,
+    saveProgress
 };

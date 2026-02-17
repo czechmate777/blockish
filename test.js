@@ -64,6 +64,86 @@
         assert(B.stillAlive() === false, "full grid with one shape should be dead");
     });
 
+    run("undo restores previous state", function () {
+        B.clearGridForTest();
+        B.setShapeSlotsForTest([0, 1, 2]);
+        B.currentScore = 0;
+        B.highScore = 0;
+        const grid = B.grid;
+        const n = B.gridCount;
+        grid[0][0].filled = true;
+        grid[0][0].color = 0;
+        B.saveProgress();
+        grid[1][1].filled = true;
+        grid[1][1].color = 0;
+        B.saveProgress();
+        B.reset();
+        assert(grid[0][0].filled === true, "undo should restore first cell");
+        assert(grid[1][1].filled === false, "undo should clear second cell");
+    });
+
+    run("undo then redo then undo restores correctly", function () {
+        B.clearGridForTest();
+        B.setShapeSlotsForTest([0, 1, 2]);
+        B.currentScore = 0;
+        const grid = B.grid;
+        grid[0][0].filled = true;
+        grid[0][0].color = 0;
+        B.saveProgress();
+        grid[1][1].filled = true;
+        grid[1][1].color = 0;
+        B.saveProgress();
+        B.reset();
+        grid[1][1].filled = true;
+        grid[1][1].color = 0;
+        B.saveProgress();
+        B.reset();
+        assert(grid[0][0].filled === true && grid[1][1].filled === false, "second undo should restore to state after first undo");
+    });
+
+    run("undo then reset gives fresh shape slots", function () {
+        B.clearGridForTest();
+        B.setShapeSlotsForTest([0, 1, 2]);
+        B.currentScore = 5;
+        B.saveProgress();
+        const grid = B.grid;
+        grid[0][0].filled = true;
+        grid[0][0].color = 0;
+        B.saveProgress();
+        B.reset();
+        B.reset();
+        const slots = B.shapeSlots;
+        assert(slots.length === 3, "after reset should have 3 shape slots");
+        for (let i = 0; i < 3; i++) {
+            assert(typeof slots[i] === "number" && slots[i] >= 0 && slots[i] < B.shapes.length, "each slot should be a valid shape index");
+        }
+        assert(B.currentScore === 0, "reset should clear score");
+    });
+
+    run("saved state excludes fade", function () {
+        B.clearGridForTest();
+        const grid = B.grid;
+        grid[0][0].filled = false;
+        grid[0][0].fade = 5;
+        B.saveProgress();
+        const saved = window.localStorage.getItem("grid");
+        assert(saved !== null && saved.indexOf("fade") === -1, "saved grid should not contain fade");
+    });
+
+    run("loaded state has no fade on cells", function () {
+        B.clearGridForTest();
+        const grid = B.grid;
+        grid[0][0].fade = 5;
+        B.saveProgress();
+        B.loadProgress();
+        const n = B.gridCount;
+        for (let j = 0; j < n; j++) {
+            for (let i = 0; i < n; i++) {
+                assert(grid[j][i].fade === undefined, "loaded cell should have no fade");
+            }
+        }
+    });
+
     // --- Report ---
     const el = document.getElementById("test-results");
     let html = "";

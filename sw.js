@@ -1,4 +1,4 @@
-const cacheName = "blockish-v45";
+const cacheName = "blockish-v46";
 
 self.addEventListener('fetch', (event) => {
     // Open the cache

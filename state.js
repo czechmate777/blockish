@@ -38,7 +38,7 @@ let shapeTouch = { x: 0, y: 0, offset: 0, slot: null, id: null };
 let yOffset = -50;
 
 let debuggingEnabled = false;
-let debugText = "😮 24.12.30.1";
+let debugText = "😮 " + appVersion;
 let debugTouches = 0;
 
 setInterval(() => {

@@ -1,5 +1,8 @@
 "use strict";
 
+// App version (bump when deploying; shown in debug overlay on device)
+const appVersion = "26.02.16.1";
+
 // Grid and layout
 const gridCount = 10;
 const gridCellSizeFac = 0.08;

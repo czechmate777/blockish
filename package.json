@@ -1,0 +1,12 @@
+{
+  "name": "blockish",
+  "version": "1.0.0",
+  "description": "Block puzzle game",
+  "private": true,
+  "scripts": {
+    "test": "node run-tests.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  }
+}

@@ -71,7 +71,7 @@ function draw() {
     ctx.fillStyle = colorReset;
     ctx.textAlign = "right";
     ctx.font = canvas.width / 10 + "px arial";
-    ctx.fillText(undoState ? "↺ " : "⎌ ", canvas.width / 2, canvas.width / 10);
+    ctx.fillText(undoState ? "↺ " : "↶ ", canvas.width / 2, canvas.width / 10);
     ctx.fillStyle = colorReset;
     ctx.textAlign = "left";
     ctx.font = canvas.width / 10 + "px arial";

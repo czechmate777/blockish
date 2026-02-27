@@ -94,29 +94,3 @@ window.addEventListener("pointermove", e => {
 });
 window.addEventListener("pointerup", e => handlePointerEnd(e.pointerId));
 window.addEventListener("pointercancel", e => handlePointerEnd(e.pointerId));
-
-window.addEventListener("touchstart", e => {
-    if (e.changedTouches.length && shapeTouch.id == null) {
-        const t = e.changedTouches[0];
-        handlePointerStart(t.pageX - appOffsetX, t.pageY, t.identifier);
-    }
-}, { passive: true });
-window.addEventListener("touchmove", e => {
-    for (let i = 0; i < e.changedTouches.length; i++) {
-        const t = e.changedTouches[i];
-        if (t.identifier === shapeTouch.id) {
-            handlePointerMove(t.pageX - appOffsetX, t.pageY, t.identifier);
-            break;
-        }
-    }
-}, { passive: true });
-window.addEventListener("touchend", e => {
-    for (let i = 0; i < e.changedTouches.length; i++) {
-        handlePointerEnd(e.changedTouches[i].identifier);
-    }
-});
-window.addEventListener("touchcancel", e => {
-    for (let i = 0; i < e.changedTouches.length; i++) {
-        handlePointerEnd(e.changedTouches[i].identifier);
-    }
-});

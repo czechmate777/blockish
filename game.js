@@ -98,7 +98,7 @@ function reset(force) {
         loadShapeBatch();
         currentScore = 0;
         draw();
-    } else {
+    } else if (localStorage.gridOld) {
         undoState = true;
         loadProgress(true);
         draw();

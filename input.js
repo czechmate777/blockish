@@ -11,6 +11,16 @@ function screenToGrid(x, y) {
 }
 
 function handlePointerStart(pointerX, pointerY, pointerId) {
+    if (gameOver) {
+        if (pointerX >= shareBtn.x && pointerX <= shareBtn.x + shareBtn.w &&
+            pointerY >= shareBtn.y && pointerY <= shareBtn.y + shareBtn.h) {
+            shareScore();
+        } else {
+            gameOver = false;
+            reset(true);
+        }
+        return;
+    }
     if (shapeTouch.id != null) return;
     if (pointerY > slotsPos - slotsHeight / 2 && pointerY < slotsPos + slotsHeight / 2) {
         renderRequest = true;
@@ -75,7 +85,10 @@ function handlePointerEnd(pointerId) {
                 scoreAdd(1);
             });
             checkGridLines();
-            if (!stillAlive()) reset(true);
+            if (!stillAlive()) {
+                gameOver = true;
+                renderRequest = true;
+            }
             saveProgress();
             renderRequest = true;
         }

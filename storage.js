@@ -35,6 +35,12 @@ function loadProgress(undoOnly = false) {
             return s === "" ? null : parseInt(s);
         });
     }
+
+    if (store.futureShapeSlots) {
+        futureShapeSlots = store.futureShapeSlots.split(",", shapeBatchLength).map(s => {
+            return s === "" ? null : parseInt(s);
+        });
+    }
 }
 
 function saveProgress() {

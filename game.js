@@ -6,7 +6,7 @@ function loadShapeBatch() {
     } else {
         for (let s = 0; s < shapeBatchLength; s++) {
             shapeSlots[s] = Math.floor(Math.random() * shapes.length);
-            futureShapeSlots = shapeSlots;
+            futureShapeSlots = shapeSlots.slice();
         }
     }
 }
@@ -23,6 +23,7 @@ function scoreAdd(points) {
     currentScore += points;
     if (currentScore > highScore) {
         highScore = currentScore;
+        isNewHighScore = true;
     }
 }
 
@@ -89,6 +90,7 @@ function reset(force) {
     if (undoState || force) {
         undoState = false;
         loadFutureShapeSlots = false;
+        isNewHighScore = false;
         for (let i = 0; i < gridCount; i++) {
             grid[i] = [];
             for (let j = 0; j < gridCount; j++) {
@@ -105,5 +107,15 @@ function reset(force) {
         // Persist restored state so a later redo + undo loads the right backup
         saveProgress();
         undoState = true;
+    }
+}
+
+function shareScore() {
+    const text = `I scored ${currentScore} in Blockish! 🎮`;
+    const url = "https://czechmate777.github.io/blockish/";
+    if (navigator.share) {
+        navigator.share({ title: "Blockish", text, url }).catch(() => {});
+    } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(text + " " + url).catch(() => {});
     }
 }

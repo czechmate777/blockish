@@ -48,6 +48,10 @@ setInterval(() => {
     debugTouches = 0;
 }, 1000);
 
+let gameOver = false;
+let isNewHighScore = false;
+let shareBtn = { x: 0, y: 0, w: 0, h: 0 };
+
 let rendering = true;
 let renderRequestOld = renderRequest;
 let renderCancelId = null;

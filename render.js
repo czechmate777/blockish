@@ -31,12 +31,13 @@ function draw() {
                 color = colorEmpty;
                 drawGridRect(i, j);
                 if (grid[j][i].fade != undefined) {
+                    const scale = (grid[j][i].fade + 1) / fades.length;
                     if ((style === 0 || style === 2) && colors[grid[j][i].color] != undefined) {
                         color = colors[grid[j][i].color] + fades[grid[j][i].fade];
                     } else if (style !== 4) {
                         color = colorFilled + fades[grid[j][i].fade];
                     }
-                    drawGridRect(i, j);
+                    drawGridRect(i, j, scale);
                     grid[j][i].fade = --grid[j][i].fade < 0 ? undefined : grid[j][i].fade;
                 }
             }
@@ -82,6 +83,49 @@ function draw() {
         ctx.textAlign = "center";
         ctx.fillText(debugText, canvas.width / 2, canvas.height / 2);
     }
+
+    if (gameOver) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.font = "bold " + canvas.width / 8 + "px arial";
+        ctx.fillText("Game Over", centerX, centerY - canvas.width / 6);
+
+        ctx.font = canvas.width / 6 + "px arial";
+        ctx.fillText(currentScore, centerX, centerY + canvas.width / 20);
+
+        if (isNewHighScore) {
+            ctx.fillStyle = "#ffd700";
+            ctx.font = "bold " + canvas.width / 12 + "px arial";
+            ctx.fillText("🏆 New High Score!", centerX, centerY + canvas.width / 5);
+        }
+
+        const btnW = canvas.width * 0.55;
+        const btnH = canvas.width / 9;
+        const btnX = centerX - btnW / 2;
+        const btnY = canvas.height - canvas.width / 4 - btnH / 2;
+        shareBtn.x = btnX;
+        shareBtn.y = btnY;
+        shareBtn.w = btnW;
+        shareBtn.h = btnH;
+
+        ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+        ctx.beginPath();
+        roundRect(btnX, btnY, btnW, btnH, btnH * radiusFactor * 2);
+        ctx.fill();
+        ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
+        ctx.font = canvas.width / 16 + "px arial";
+        ctx.fillText("📤 Share Score", centerX, btnY + btnH * 0.68);
+
+        ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+        ctx.font = canvas.width / 18 + "px arial";
+        ctx.fillText("Tap anywhere to restart", centerX, canvas.height - canvas.width / 14);
+    }
 }
 
 function rect(obj) {
@@ -118,11 +162,12 @@ function roundRect(x, y, w, h, r) {
     }
 }
 
-function drawGridRect(i, j) {
+function drawGridRect(i, j, scale) {
+    scale = scale == null ? 1 : scale;
     rect({
         x: canvas.width / 2 - (gridWidth - gridCellSize) / 2 + i * (gridCellSize + gridCellSpacing),
         y: canvas.height / 2 - (gridWidth - gridCellSize) / 2 + j * (gridCellSize + gridCellSpacing) + yOffset,
-        w: gridCellSize
+        w: gridCellSize * scale
     });
 }
 

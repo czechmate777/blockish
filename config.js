@@ -1,7 +1,7 @@
 "use strict";
 
 // App version (bump when deploying; shown in debug overlay on device)
-const appVersion = "26.02.26.1";
+const appVersion = "26.03.02.1";
 
 // Grid and layout
 const gridCount = 10;
